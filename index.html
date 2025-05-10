@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, minimum-scale=1.0">
+    <meta name="description" content="Wrapology Innovations offers premium packaging solutions, custom boxes, and nationwide delivery. We specialize in high-quality corrugated boxes, duplex boxes, and printed packaging.">
+    <meta name="keywords" content="packaging, boxes, custom boxes, packaging solutions, corrugated boxes, printing">
+    <meta name="author" content="Wrapology Innovations">
+    <meta name="theme-color" content="#053867">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="format-detection" content="telephone=yes">
+    <title>Wrapology Innovations - Packaging Solutions</title>
+    
+    <!-- Preload critical assets -->
+    <link rel="preload" href="assets/styles.css" as="style">
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" as="style">
+    <link rel="preload" href="assets/script.js" as="script">
+    
+    <link rel="stylesheet" href="assets/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="assets/script.js" defer></script>
+</head>
+<body>
+    <!-- Add initial loading indicator for mobile only -->
+    <div class="refresh-indicator" id="refresh-indicator">Pull down to refresh</div>
+    
+    <!-- Navbar Container -->
+    <div id="navbar-container"></div>
+
+    <!-- Dynamic Content Section -->
+    <main id="content">
+        <!-- Default content will be loaded here -->
+    </main>
+
+    <!-- Footer Container -->
+    <div id="footer-container"></div>
+
+    <script>
+        // Load the navbar and footer
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load the navbar
+            fetch('partials/navbar.html')
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('navbar-container').innerHTML = data;
+                });
+                
+            // Load the footer
+            fetch('partials/footer.html')
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('footer-container').innerHTML = data;
+                });
+                
+            // Load the default page (home.html) on initial load
+            loadPage('pages/home.html');
+            
+            // Add pull-to-refresh functionality only on mobile
+            if ('ontouchstart' in window && window.innerWidth <= 768) {
+                const refreshIndicator = document.getElementById('refresh-indicator');
+                // Mark it as visible for mobile
+                refreshIndicator.classList.add('visible');
+                
+                let startY;
+                let refreshing = false;
+                
+                document.addEventListener('touchstart', function(e) {
+                    startY = e.touches[0].clientY;
+                }, { passive: true });
+                
+                document.addEventListener('touchmove', function(e) {
+                    const y = e.touches[0].clientY;
+                    // Only activate when at the top of the page and pulling down
+                    if (window.scrollY <= 0 && y > startY && !refreshing) {
+                        refreshIndicator.classList.add('active');
+                        // If pulled down far enough, reload
+                        if (y - startY > 80) {
+                            refreshing = true;
+                            refreshIndicator.textContent = 'Refreshing...';
+                            // Reload current page
+                            const currentPage = window.location.hash.replace('#', '') || 'pages/home.html';
+                            setTimeout(() => {
+                                loadPage(currentPage);
+                                refreshIndicator.classList.remove('active');
+                                refreshing = false;
+                                refreshIndicator.textContent = 'Pull down to refresh';
+                            }, 800);
+                        }
+                    }
+                }, { passive: true });
+                
+                document.addEventListener('touchend', function() {
+                    if (!refreshing) {
+                        refreshIndicator.classList.remove('active');
+                    }
+                }, { passive: true });
+                
+                // Handle resize events to hide/show refresh indicator based on window width
+                window.addEventListener('resize', function() {
+                    if (window.innerWidth <= 768) {
+                        refreshIndicator.classList.add('visible');
+                    } else {
+                        refreshIndicator.classList.remove('visible');
+                        refreshIndicator.classList.remove('active');
+                    }
+                });
+            }
+        });
+
+        // Function to load pages dynamically
+        function loadPage(page) {
+            fetch(page)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Page not found');
+                    }
+                    return response.text();
+                })
+                .then(data => {
+                    document.getElementById('content').innerHTML = data;
+                    // Scroll to the top of the page
+                    window.scrollTo(0, 0);
+                    
+                    // Close mobile navigation menu when a page loads
+                    const navList = document.querySelector('.nav-list');
+                    const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+                    
+                    if (navList) {
+                        navList.classList.remove('active');
+                    }
+                    
+                    if (mobileMenuToggle) {
+                        mobileMenuToggle.classList.remove('active');
+                    }
+                    
+                    // Also close any open dropdowns
+                    const dropdowns = document.querySelectorAll('.dropdown');
+                    dropdowns.forEach(dropdown => {
+                        dropdown.classList.remove('active');
+                        dropdown.classList.remove('show-dropdown');
+                    });
+                    
+                    // Update the page's URL fragment
+                    window.location.hash = page;
+                })
+                .catch(error => {
+                    // Load 404 page for a better user experience
+                    fetch('pages/404.html')
+                        .then(response => response.text())
+                        .then(data => {
+                            document.getElementById('content').innerHTML = data;
+                        })
+                        .catch(() => {
+                            // Fallback if 404 page can't be loaded
+                            document.getElementById('content').innerHTML = '<div class="error-container"><h2>Error loading page</h2><p>' + error.message + '</p><a href="#" onclick="loadPage(\'pages/home.html\')" class="btn btn-primary">Back to Home</a></div>';
+                        });
+                });
+        }
+
+        // Add event listener for mobile menu toggle after navbar is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+                const navList = document.querySelector('.nav-list');
+                
+                if (mobileMenuToggle && navList) {
+                    mobileMenuToggle.addEventListener('click', function() {
+                        navList.classList.toggle('active');
+                    });
+                }
+                
+                // Handle dropdown menus
+                const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
+                dropdownToggles.forEach(toggle => {
+                    toggle.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        this.parentElement.classList.toggle('show-dropdown');
+                    });
+                });
+            }, 500); // Small delay to ensure navbar is loaded
+        });
+    </script>
+</body>
+</html>

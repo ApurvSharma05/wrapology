@@ -1,0 +1,250 @@
+/* Large Desktops (1200px and up) */
+@media (min-width: 1200px) {
+  .container {
+    max-width: 1140px;
+  }
+  
+  .product-card {
+    width: calc(25% - 30px); /* 4 cards per row on very large screens */
+  }
+}
+
+/* Desktops and Laptops (992px - 1199px) */
+@media (min-width: 992px) and (max-width: 1199px) {
+  .container {
+    max-width: 960px;
+  }
+  
+  .product-card {
+    width: calc(33.333% - 30px); /* 3 cards per row */
+  }
+  
+  .hero h1 {
+    font-size: 2.25rem;
+  }
+}
+
+/* Tablets (768px - 991px) */
+@media (min-width: 768px) and (max-width: 991px) {
+  .container {
+    max-width: 720px;
+  }
+  
+  .product-card {
+    width: calc(50% - 30px); /* 2 cards per row */
+  }
+  
+  .hero h1 {
+    font-size: 2rem;
+  }
+  
+  .hero p {
+    font-size: 1rem;
+  }
+  
+  .carousel-arrow {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* Large Phones (576px - 767px) */
+@media (min-width: 576px) and (max-width: 767px) {
+  .container {
+    max-width: 540px;
+  }
+  
+  .product-card {
+    width: calc(100% - 30px); /* 1 card per row */
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .hero h1 {
+    font-size: 1.75rem;
+  }
+  
+  .hero p {
+    font-size: 1rem;
+  }
+  
+  .section-title h2 {
+    font-size: 1.75rem;
+  }
+  
+  .intro-text {
+    font-size: 1rem;
+  }
+  
+  .carousel-arrow {
+    width: 38px;
+    height: 38px;
+    margin: 0 var(--space-2);
+  }
+  
+  .carousel-controls {
+    top: auto;
+    bottom: -60px;
+    transform: none;
+  }
+  
+  .carousel-nav {
+    margin-top: 60px;
+  }
+}
+
+/* Small Phones (575px and down) */
+@media (max-width: 575px) {
+  :root {
+    --space-6: 36px;
+    --space-7: 48px;
+  }
+  
+  .container {
+    padding: 0 var(--space-3);
+  }
+  
+  .product-card {
+    width: calc(100% - 30px); /* 1 card per row */
+    max-width: 350px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .product-image {
+    height: 200px;
+  }
+  
+  .hero {
+    padding: var(--space-5) 0;
+  }
+  
+  .hero h1 {
+    font-size: 1.5rem;
+    margin-bottom: var(--space-2);
+  }
+  
+  .hero p {
+    font-size: 0.9375rem;
+  }
+  
+  .section-title h2 {
+    font-size: 1.5rem;
+  }
+  
+  .intro-text {
+    font-size: 0.9375rem;
+    margin-bottom: var(--space-4);
+  }
+  
+  .carousel-arrow {
+    width: 36px;
+    height: 36px;
+    margin: 0 var(--space-1);
+  }
+  
+  .carousel-controls {
+    position: relative;
+    top: auto;
+    transform: none;
+    margin-top: var(--space-4);
+    justify-content: center;
+    gap: var(--space-4);
+  }
+  
+  .carousel-nav {
+    margin-top: var(--space-3);
+  }
+  
+  .carousel-dot {
+    width: 10px;
+    height: 10px;
+  }
+  
+  h2 {
+    font-size: 1.5rem;
+  }
+  
+  h3 {
+    font-size: 1.25rem;
+  }
+  
+  .btn {
+    width: 100%;
+    max-width: 280px;
+    padding: var(--space-3) var(--space-4);
+  }
+  
+  .custom-cta {
+    padding: var(--space-5) var(--space-3);
+  }
+}
+
+/* Touch Device Optimizations */
+@media (hover: none) {
+  .product-card:hover {
+    transform: none;
+    box-shadow: var(--shadow-sm);
+  }
+  
+  .product-card:active {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+  }
+  
+  .carousel-arrow {
+    opacity: 1;
+    width: 42px;
+    height: 42px;
+  }
+  
+  .carousel-dot {
+    width: 14px;
+    height: 14px;
+    margin: 0 var(--space-1);
+  }
+  
+  .carousel-nav {
+    gap: var(--space-3);
+  }
+  
+  /* Increase tap target sizes */
+  .btn, .carousel-arrow, .carousel-dot {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Reduced Motion Preferences */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .product-card:hover .product-image img {
+    transform: none;
+  }
+}
+
+/* Increased contrast for accessibility */
+@media (prefers-contrast: more) {
+  :root {
+    --primary-color: #000000;
+    --secondary-color: #00366e;
+    --text-primary: #000000;
+    --text-secondary: #333333;
+    --border-color: #000000;
+  }
+  
+  .hero, .custom-cta {
+    background: var(--primary-color);
+  }
+  
+  .product-card {
+    box-shadow: 0 0 0 1px #000;
+  }
+}

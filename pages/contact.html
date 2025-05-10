@@ -1,0 +1,236 @@
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<style>
+    /* Additional styles specific to contact page */
+    .contact-page {
+        padding: 40px 0;
+    }
+    
+    .contact-page h1 {
+        text-align: center;
+        margin-bottom: 40px;
+        color: #333;
+        position: relative;
+    }
+    
+    .contact-page h1:after {
+        content: "";
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 60px;
+        height: 3px;
+        background-color: #4a90e2;
+    }
+    
+    .contact-content {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 30px;
+        margin-bottom: 40px;
+    }
+    
+    .contact-info-map-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 30px;
+        width: 100%;
+    }
+    
+    .contact-form-container {
+        flex: 1;
+        min-width: 300px;
+        background-color: white;
+        padding: 30px;
+        border-radius: 4px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .contact-form-container h2 {
+        margin-bottom: 20px;
+        color: #333;
+    }
+    
+    .contact-info {
+        flex: 1;
+        min-width: 300px;
+        background-color: white;
+        padding: 30px;
+        border-radius: 4px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .contact-info h2 {
+        margin-bottom: 20px;
+        color: #333;
+    }
+    
+    .info-item {
+        display: flex;
+        margin-bottom: 20px;
+    }
+    
+    .info-icon {
+        margin-right: 15px;
+        font-size: 1.5em;
+        color: #4a90e2;
+        width: 30px;
+    }
+    
+    .info-content {
+        flex: 1;
+    }
+    
+    .info-content h3 {
+        margin-bottom: 5px;
+        font-size: 1.1em;
+        color: #333;
+    }
+    
+    .info-content p {
+        color: #666;
+        line-height: 1.6;
+    }
+    
+    .contact-form {
+        margin-top: 20px;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #666;
+    }
+    
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+    
+    .form-group textarea {
+        height: 120px;
+    }
+    
+    .form-group.inline {
+        display: flex;
+        gap: 15px;
+    }
+    
+    .form-group.inline > div {
+        flex: 1;
+    }
+    
+    .submit-btn {
+        display: inline-block;
+        background-color: #4a90e2;
+        color: white;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+        text-transform: uppercase;
+        transition: background-color 0.3s;
+    }
+    
+    .submit-btn:hover {
+        background-color: #357abd;
+    }
+    
+    .map-container {
+        flex: 1;
+        min-width: 300px;
+        height: 100%;
+        min-height: 400px;
+        border-radius: 4px;
+        overflow: hidden;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .map-container iframe {
+        width: 100%;
+        height: 100%;
+        min-height: 400px;
+        border: 0;
+    }
+    
+    @media (max-width: 992px) {
+        .contact-info-map-container {
+            flex-direction: column;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .contact-content {
+            flex-direction: column;
+        }
+        
+        .form-group.inline {
+            flex-direction: column;
+            gap: 20px;
+        }
+    }
+</style>
+<body>
+    <section class="contact-page">
+        <div class="container">
+            <h1>Contact Us</h1>
+            <div class="contact-info-map-container">
+                <div class="contact-info">
+                    <h2>Contact Information</h2>
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div class="info-content">
+                            <h3>Working Office:</h3>
+                            <p>Plot No. D-1 & D-2, Sector D-1, P-2 Tronica City, Loni<br>Ghaziabad, 201102, UP</p>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-phone-alt"></i>
+                        </div>
+                        <div class="info-content">
+                            <h3>Phone Numbers</h3>
+                            <p>+919540838325<br>+919873275123</p>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="info-content">
+                            <h3>Email Address</h3>
+                            <p>wrapologyinnovations@gmail.com</p>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="info-content">
+                            <h3>Working Hours</h3>
+                            <p>Monday - Friday: 9:00 AM - 6:00 PM<br>Saturday: 10:00 AM - 4:00 PM<br>Sunday: Closed</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="map-container">
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d27982.071618151087!2d77.24987886906388!3d28.75661303819359!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390cf9007073ce5d%3A0xb14f5e5a17a58554!2sTronica%20City!5e0!3m2!1sen!2sin!4v1745054032241!5m2!1sen!2sin" allowfullscreen="" loading="lazy"></iframe>
+                </div>
+            </div>
+        </div>
+    </section>
+    <script src="script.js"></script>
+</body>
+
