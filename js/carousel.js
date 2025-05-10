@@ -1,396 +1,184 @@
-/**
- * Professional Product Carousel Implementation
- */
-document.addEventListener('DOMContentLoaded', function() {
-  // Initialize the carousel when the DOM is loaded
-  initProductCarousel();
-});
-
-function initProductCarousel() {
-  // Elements
-  const track = document.querySelector('.carousel-track');
-  const carouselContainer = document.querySelector('.carousel-container');
-  const prevButton = document.querySelector('.carousel-arrow.prev');
-  const nextButton = document.querySelector('.carousel-arrow.next');
-  const navContainer = document.querySelector('.carousel-nav');
+// Modern Carousel Implementation
+class ProductCarousel {
+  constructor(container) {
+    this.container = container;
+    this.track = container.querySelector('.carousel-track');
+    this.cards = Array.from(this.track.children);
+    this.nav = container.querySelector('.carousel-nav');
+    this.prevButton = container.querySelector('.carousel-arrow.prev');
+    this.nextButton = container.querySelector('.carousel-arrow.next');
+    
+    this.cardWidth = 0;
+    this.currentIndex = 0;
+    this.isDragging = false;
+    this.startPos = 0;
+    this.currentTranslate = 0;
+    this.prevTranslate = 0;
+    this.animationID = 0;
+    
+    this.init();
+  }
   
-  // Show loading state
-  const loader = document.createElement('div');
-  loader.className = 'loader';
-  carouselContainer.appendChild(loader);
+  init() {
+    this.setupCards();
+    this.createNav();
+    this.setupEvents();
+    this.updateControls();
+    this.startAutoplay();
+  }
   
-  // Configuration
-  let currentSlide = 0;
-  let isDragging = false;
-  let startPos = 0;
-  let currentTranslate = 0;
-  let prevTranslate = 0;
-  let animationID = 0;
-  let cardWidth = 0;
-  let gap = 30; // Gap between cards in px
-  let visibleCards = getVisibleCardCount();
-  let autoplayTimer = null;
-  let cards = [];
-  
-  // To prevent race conditions, initialize cards after a short delay
-  setTimeout(() => {
-    initializeCarousel();
-  }, 100);
-  
-  function initializeCarousel() {
-    // Generate cards from product data
-    productData.forEach(product => {
-      const card = createProductCard(product);
-      track.appendChild(card);
+  setupCards() {
+    this.cardWidth = this.cards[0].offsetWidth;
+    const gap = 30;
+    const totalWidth = this.cards.length * (this.cardWidth + gap) - gap;
+    this.track.style.width = `${totalWidth}px`;
+    
+    // Add animation delay to cards
+    this.cards.forEach((card, index) => {
+      card.style.animationDelay = `${index * 0.1}s`;
     });
-    
-    // Remove loader after cards are added
-    if (loader.parentElement) {
-      loader.parentElement.removeChild(loader);
-    }
-    
-    // Get all cards and set initial opacity
-    cards = Array.from(track.querySelectorAll('.product-card'));
-    
-    // Calculate dimensions
-    updateDimensions();
-    
-    // Generate navigation dots
-    generateNavDots();
-    
-    // Set up touch and click events
-    setupEvents();
-    
-    // Update controls state
-    updateControls();
-    
-    // Start autoplay after a delay
-    startAutoplay();
-    
-    // Show initial slide
-    goToSlide(0, false);
   }
   
-  function updateDimensions() {
-    // Get current viewport width to determine visible cards
-    visibleCards = getVisibleCardCount();
+  createNav() {
+    const dotsCount = Math.ceil(this.cards.length / this.getVisibleCards());
+    this.nav.innerHTML = '';
     
-    // Get single card width including gap
-    const cardRect = cards[0].getBoundingClientRect();
-    cardWidth = cardRect.width;
-    
-    // Update carousel track width
-    const totalWidth = cards.length * (cardWidth + gap) - gap;
-    track.style.width = `${totalWidth}px`;
-  }
-  
-  function generateNavDots() {
-    // Clear existing dots
-    navContainer.innerHTML = '';
-    
-    // Calculate number of pages (dots)
-    const maxSlides = Math.max(0, cards.length - visibleCards);
-    const pageCount = maxSlides + 1;
-    
-    // Create dots
-    for (let i = 0; i < pageCount; i++) {
-      const dot = document.createElement('div');
+    for (let i = 0; i < dotsCount; i++) {
+      const dot = document.createElement('button');
       dot.className = 'carousel-dot';
-      if (i === 0) dot.classList.add('active');
-      
-      // Add accessibility attributes
-      dot.setAttribute('role', 'button');
-      dot.setAttribute('tabindex', '0');
       dot.setAttribute('aria-label', `Go to slide ${i + 1}`);
-      
-      // Add event listeners
-      dot.addEventListener('click', () => {
-        goToSlide(i);
-      });
-      
-      // Keyboard navigation
-      dot.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          goToSlide(i);
-        }
-      });
-      
-      navContainer.appendChild(dot);
+      dot.addEventListener('click', () => this.goToSlide(i));
+      this.nav.appendChild(dot);
     }
   }
   
-  function setupEvents() {
-    // Arrow button click events
-    prevButton.addEventListener('click', () => {
-      goToSlide(currentSlide - 1);
-    });
+  setupEvents() {
+    // Button controls
+    this.prevButton.addEventListener('click', () => this.navigate(-1));
+    this.nextButton.addEventListener('click', () => this.navigate(1));
     
-    nextButton.addEventListener('click', () => {
-      goToSlide(currentSlide + 1);
-    });
+    // Touch events
+    this.track.addEventListener('touchstart', this.touchStart.bind(this));
+    this.track.addEventListener('touchmove', this.touchMove.bind(this));
+    this.track.addEventListener('touchend', this.touchEnd.bind(this));
     
-    // Touch events for mobile swiping
-    addPassiveEventListener(track, 'touchstart', touchStart);
-    addPassiveEventListener(track, 'touchmove', touchMove);
-    addPassiveEventListener(track, 'touchend', touchEnd);
-    
-    // Mouse events for desktop dragging
-    track.addEventListener('mousedown', touchStart);
-    track.addEventListener('mousemove', touchMove);
-    track.addEventListener('mouseup', touchEnd);
-    track.addEventListener('mouseleave', touchEnd);
+    // Mouse events
+    this.track.addEventListener('mousedown', this.touchStart.bind(this));
+    this.track.addEventListener('mousemove', this.touchMove.bind(this));
+    this.track.addEventListener('mouseup', this.touchEnd.bind(this));
+    this.track.addEventListener('mouseleave', this.touchEnd.bind(this));
     
     // Prevent context menu on right click during drag
-    track.addEventListener('contextmenu', e => {
-      if (isDragging) {
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
-      }
+    this.track.addEventListener('contextmenu', e => {
+      if (this.isDragging) e.preventDefault();
     });
     
-    // Keyboard navigation
-    carouselContainer.setAttribute('tabindex', '0');
-    carouselContainer.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowLeft') {
-        goToSlide(currentSlide - 1);
-        e.preventDefault();
-      } else if (e.key === 'ArrowRight') {
-        goToSlide(currentSlide + 1);
-        e.preventDefault();
-      }
-    });
-    
-    // Pause autoplay on interaction
-    carouselContainer.addEventListener('mouseenter', stopAutoplay);
-    carouselContainer.addEventListener('mouseleave', startAutoplay);
-    carouselContainer.addEventListener('focusin', stopAutoplay);
-    carouselContainer.addEventListener('focusout', startAutoplay);
-    
-    // Window resize event
-    window.addEventListener('resize', debounce(() => {
-      // Update dimensions and visible cards
-      const oldVisibleCards = visibleCards;
-      
-      updateDimensions();
-      
-      // If visible cards count changed, regenerate dots
-      if (oldVisibleCards !== visibleCards) {
-        generateNavDots();
-        
-        // Make sure current slide is still valid
-        const maxSlides = Math.max(0, cards.length - visibleCards);
-        if (currentSlide > maxSlides) {
-          currentSlide = maxSlides;
-        }
-      }
-      
-      // Update slide position
-      goToSlide(currentSlide, false);
-    }, 200));
+    // Window resize
+    window.addEventListener('resize', this.handleResize.bind(this));
   }
   
-  function updateControls() {
-    // Calculate the max slide index
-    const maxSlides = Math.max(0, cards.length - visibleCards);
+  getVisibleCards() {
+    const width = window.innerWidth;
+    if (width >= 1200) return 3;
+    if (width >= 768) return 2;
+    return 1;
+  }
+  
+  navigate(direction) {
+    const visibleCards = this.getVisibleCards();
+    const maxIndex = Math.ceil(this.cards.length / visibleCards) - 1;
     
-    // Update previous button state
-    if (currentSlide <= 0) {
-      prevButton.classList.add('disabled');
-      prevButton.setAttribute('aria-disabled', 'true');
-    } else {
-      prevButton.classList.remove('disabled');
-      prevButton.setAttribute('aria-disabled', 'false');
-    }
+    this.currentIndex = Math.max(0, Math.min(this.currentIndex + direction, maxIndex));
+    this.goToSlide(this.currentIndex);
+  }
+  
+  goToSlide(index) {
+    const visibleCards = this.getVisibleCards();
+    const offset = index * (this.cardWidth + 30) * visibleCards;
     
-    // Update next button state
-    if (currentSlide >= maxSlides) {
-      nextButton.classList.add('disabled');
-      nextButton.setAttribute('aria-disabled', 'true');
-    } else {
-      nextButton.classList.remove('disabled');
-      nextButton.setAttribute('aria-disabled', 'false');
-    }
+    this.track.style.transform = `translateX(-${offset}px)`;
+    this.currentIndex = index;
+    this.updateControls();
+  }
+  
+  updateControls() {
+    const visibleCards = this.getVisibleCards();
+    const maxIndex = Math.ceil(this.cards.length / visibleCards) - 1;
     
-    // Update active dot
-    const dots = navContainer.querySelectorAll('.carousel-dot');
-    dots.forEach((dot, index) => {
-      if (index === currentSlide) {
-        dot.classList.add('active');
-        dot.setAttribute('aria-current', 'true');
+    this.prevButton.disabled = this.currentIndex === 0;
+    this.nextButton.disabled = this.currentIndex === maxIndex;
+    
+    Array.from(this.nav.children).forEach((dot, i) => {
+      dot.classList.toggle('active', i === this.currentIndex);
+    });
+  }
+  
+  touchStart(e) {
+    this.isDragging = true;
+    this.startPos = e.type.includes('mouse') ? e.pageX : e.touches[0].clientX;
+    this.animationID = requestAnimationFrame(this.animation.bind(this));
+    this.track.style.cursor = 'grabbing';
+  }
+  
+  touchMove(e) {
+    if (!this.isDragging) return;
+    
+    const currentPosition = e.type.includes('mouse') ? e.pageX : e.touches[0].clientX;
+    this.currentTranslate = this.prevTranslate + currentPosition - this.startPos;
+  }
+  
+  touchEnd() {
+    this.isDragging = false;
+    cancelAnimationFrame(this.animationID);
+    
+    const movedBy = this.currentTranslate - this.prevTranslate;
+    
+    if (Math.abs(movedBy) > this.cardWidth / 4) {
+      if (movedBy < 0) {
+        this.navigate(1);
       } else {
-        dot.classList.remove('active');
-        dot.setAttribute('aria-current', 'false');
+        this.navigate(-1);
       }
-    });
-  }
-  
-  function goToSlide(index, animate = true) {
-    // Pause autoplay when manually navigating
-    if (animate) {
-      stopAutoplay();
-      setTimeout(startAutoplay, 5000);
-    }
-    
-    // Calculate the max slide index
-    const maxSlides = Math.max(0, cards.length - visibleCards);
-    
-    // Ensure index is in bounds
-    if (index < 0) index = 0;
-    if (index > maxSlides) index = maxSlides;
-    
-    // Update current slide
-    currentSlide = index;
-    
-    // Calculate translation value
-    const translateX = -currentSlide * (cardWidth + gap);
-    
-    // Apply transition
-    if (animate) {
-      track.style.transition = 'transform var(--transition-normal)';
     } else {
-      track.style.transition = 'none';
+      this.goToSlide(this.currentIndex);
     }
     
-    // Set transform
-    track.style.transform = `translateX(${translateX}px)`;
-    prevTranslate = translateX;
-    
-    // Update controls
-    updateControls();
-    
-    // Update track position after transition
-    if (animate) {
-      setTimeout(() => {
-        track.style.transition = '';
-      }, 300);
+    this.track.style.cursor = '';
+  }
+  
+  animation() {
+    if (this.isDragging) {
+      this.track.style.transform = `translateX(${this.currentTranslate}px)`;
+      requestAnimationFrame(this.animation.bind(this));
     }
   }
   
-  // Touch and mouse events
-  function touchStart(e) {
-    // Stop autoplay during interaction
-    stopAutoplay();
+  handleResize() {
+    const oldVisible = this.getVisibleCards();
+    this.setupCards();
     
-    // Get initial position
-    startPos = getPositionX(e);
-    isDragging = true;
-    
-    // Cancel any existing animation
-    cancelAnimationFrame(animationID);
-    
-    // Add dragging class
-    track.classList.add('dragging');
-    
-    // Start animation
-    animation();
-  }
-  
-  function touchMove(e) {
-    if (!isDragging) return;
-    
-    // Get current position
-    const currentPosition = getPositionX(e);
-    
-    // Calculate movement
-    currentTranslate = prevTranslate + currentPosition - startPos;
-    
-    // Add some resistance at the edges
-    const maxTranslate = 0;
-    const minTranslate = -(cards.length - visibleCards) * (cardWidth + gap);
-    
-    if (currentTranslate > maxTranslate) {
-      currentTranslate = maxTranslate + (currentTranslate - maxTranslate) * 0.3;
-    } else if (currentTranslate < minTranslate) {
-      currentTranslate = minTranslate + (currentTranslate - minTranslate) * 0.3;
-    }
-    
-    // Prevent page scrolling on touch devices
-    if (e.type === 'touchmove') {
-      e.preventDefault();
+    if (oldVisible !== this.getVisibleCards()) {
+      this.createNav();
+      this.goToSlide(0);
     }
   }
   
-  function touchEnd(e) {
-    // End dragging
-    isDragging = false;
-    
-    // Remove dragging class
-    track.classList.remove('dragging');
-    
-    // Calculate the movement
-    const moveDistance = currentTranslate - prevTranslate;
-    
-    // Determine if we should change slide
-    const threshold = cardWidth * 0.2; // 20% of card width
-    
-    if (Math.abs(moveDistance) > threshold) {
-      // Direction
-      const direction = moveDistance > 0 ? -1 : 1;
+  startAutoplay() {
+    setInterval(() => {
+      const visibleCards = this.getVisibleCards();
+      const maxIndex = Math.ceil(this.cards.length / visibleCards) - 1;
       
-      // Calculate new index
-      let newIndex = currentSlide + direction;
-      
-      // Ensure in bounds
-      const maxSlides = Math.max(0, cards.length - visibleCards);
-      if (newIndex < 0) newIndex = 0;
-      if (newIndex > maxSlides) newIndex = maxSlides;
-      
-      // Go to new slide with momentum animation
-      track.classList.add('momentum');
-      goToSlide(newIndex, true);
-      
-      setTimeout(() => {
-        track.classList.remove('momentum');
-      }, 800);
-    } else {
-      // Stay on current slide
-      goToSlide(currentSlide, true);
-    }
-    
-    // Cancel animation
-    cancelAnimationFrame(animationID);
-    
-    // Restart autoplay after a delay
-    setTimeout(startAutoplay, 4000);
-  }
-  
-  function animation() {
-    // Apply transform during dragging
-    if (isDragging) {
-      track.style.transform = `translateX(${currentTranslate}px)`;
-      animationID = requestAnimationFrame(animation);
-    }
-  }
-  
-  function getPositionX(e) {
-    // Get touch or mouse position
-    return e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
-  }
-  
-  function startAutoplay() {
-    // Clear any existing autoplay
-    stopAutoplay();
-    
-    // Start autoplay
-    autoplayTimer = setInterval(() => {
-      const maxSlides = Math.max(0, cards.length - visibleCards);
-      
-      // Go to next slide or loop back to first
-      if (currentSlide < maxSlides) {
-        goToSlide(currentSlide + 1);
+      if (this.currentIndex < maxIndex) {
+        this.navigate(1);
       } else {
-        goToSlide(0);
+        this.goToSlide(0);
       }
     }, 5000);
   }
-  
-  function stopAutoplay() {
-    // Clear autoplay timer
-    if (autoplayTimer) {
-      clearInterval(autoplayTimer);
-      autoplayTimer = null;
-    }
-  }
 }
+
+// Initialize carousel when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+  const carousels = document.querySelectorAll('.carousel-container');
+  carousels.forEach(carousel => new ProductCarousel(carousel));
+});
